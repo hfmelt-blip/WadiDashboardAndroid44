@@ -3,12 +3,12 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 28
     defaultConfig {
-        // Unique ID avoids signature conflicts with prior troubleshooting APKs.
-        applicationId "com.wadi.dashboardtv.networkfix2"
+        // New application ID, independent of all previous troubleshooting builds.
+        applicationId "com.hfmelt.wadidashboard.offline20261028"
         minSdkVersion 19
         targetSdkVersion 19
         versionCode 1
-        versionName "1.0-networkfix2"
+        versionName "1.0-offline-20261028"
     }
     lintOptions { abortOnError false }
 }
