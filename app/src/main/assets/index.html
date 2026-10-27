@@ -78,9 +78,9 @@ var weatherCity="بغداد",weatherLat=33.3152,weatherLon=44.3661;
 try{if(window.localStorage.getItem("wadiWeatherCity"))weatherCity=window.localStorage.getItem("wadiWeatherCity");}catch(e){}
 /* استخدم اتصال Android الأصلي لتجاوز قيود CORS وWebView القديم في Android 4.4 */
 window.__wadiCallbacks=window.__wadiCallbacks||{};
-window.__wadiNativeResult=function(id,body){
+window.__wadiNativeResult=function(id,body,error){
  var cb=window.__wadiCallbacks[id];if(!cb)return;delete window.__wadiCallbacks[id];
- if(body===null){if(cb.fail)cb.fail();return;}
+ if(body===null){window.__wadiLastNetworkError=error||"Network error";if(cb.fail)cb.fail(window.__wadiLastNetworkError);return;}
  try{cb.done(JSON.parse(body));}catch(e){if(cb.fail)cb.fail();}
 };
 var wadiRequestId=0;
@@ -108,7 +108,7 @@ function loadWeather(lat,lon,city){
   document.getElementById("tempDisplay").innerHTML=Math.round(d.current.temperature_2m)+"°C";
   document.getElementById("weatherDescDisplay").innerHTML=weatherLabel(d.current.weather_code)+" • محسوسة "+Math.round(d.current.apparent_temperature)+"°";
   document.getElementById("weatherCity").innerHTML=city+" • رطوبة "+Math.round(d.current.relative_humidity_2m)+"%";
- },function(){document.getElementById("weatherDescDisplay").innerHTML="تعذر الاتصال؛ اضغط لإعادة المحاولة";document.getElementById("weatherCity").innerHTML=city+" • الطقس عبر الإنترنت";});
+ },function(err){document.getElementById("weatherDescDisplay").innerHTML="تعذر الاتصال؛ اضغط لإعادة المحاولة";document.getElementById("weatherCity").innerHTML=city+" • "+(err||"تحقق من الشبكة");});
 }
 function findWeatherCity(city){
  document.getElementById("weatherDescDisplay").innerHTML="جارٍ البحث عن المدينة...";
@@ -117,7 +117,7 @@ function findWeatherCity(city){
    try{window.localStorage.setItem("wadiWeatherCity",weatherCity);window.localStorage.setItem("wadiWeatherLat",weatherLat);window.localStorage.setItem("wadiWeatherLon",weatherLon);}catch(e){}
    loadWeather(weatherLat,weatherLon,weatherCity);
   }else{document.getElementById("weatherDescDisplay").innerHTML="لم يتم العثور على المدينة";}
- },function(){document.getElementById("weatherDescDisplay").innerHTML="تعذر الاتصال بخدمة الطقس";});
+ },function(err){document.getElementById("weatherDescDisplay").innerHTML="تعذر الاتصال بخدمة الطقس";document.getElementById("weatherCity").innerHTML=err||"تحقق من الشبكة";});
 }
 try{var slat=window.localStorage.getItem("wadiWeatherLat"),slon=window.localStorage.getItem("wadiWeatherLon");if(slat&&slon){weatherLat=parseFloat(slat);weatherLon=parseFloat(slon);}}catch(e){}
 loadWeather(weatherLat,weatherLon,weatherCity);
@@ -147,7 +147,7 @@ function loadSurah(num,autoplay){
   if(!d.data||!d.data.ayahs){status("تعذر تحميل نص الآيات؛ تحقق من الإنترنت");return;}
   ayahs=[];for(var i=0;i<d.data.ayahs.length;i++)ayahs.push({number:d.data.ayahs[i].numberInSurah,text:d.data.ayahs[i].text});
   ayahIndex=0;showAyah();
- },function(){status("تعذر تحميل الآيات. تحقق من اتصال الإنترنت ثم اضغط تشغيل");document.getElementById("ayahText").innerHTML="تعذر تحميل الآيات";});
+ },function(err){status("تعذر تحميل الآيات: "+(err||"تحقق من الإنترنت"));document.getElementById("ayahText").innerHTML="تعذر تحميل الآيات";});
 }
 document.getElementById("playBtn").onclick=function(){if(ayahs.length){playing=true;showAyah();}else loadSurah(select.value,true);};
 document.getElementById("pauseBtn").onclick=function(){audio.pause();playing=false;status("التلاوة متوقفة مؤقتاً");};
