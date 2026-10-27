@@ -1,6 +1,7 @@
 package com.wadi.dashboard;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -18,10 +19,34 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.Socket;
+import java.io.IOException;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 public class MainActivity extends Activity {
     private WebView webView;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    // Android 4.4 can leave TLS 1.2 disabled unless it is explicitly enabled.
+    private static class TLS12SocketFactory extends SSLSocketFactory {
+        private final SSLSocketFactory delegate;
+        TLS12SocketFactory(SSLSocketFactory delegate) { this.delegate = delegate; }
+        private Socket enable(Socket socket) {
+            if (socket instanceof SSLSocket) {
+                ((SSLSocket) socket).setEnabledProtocols(new String[] {"TLSv1.2", "TLSv1.1", "TLSv1"});
+            }
+            return socket;
+        }
+        @Override public String[] getDefaultCipherSuites() { return delegate.getDefaultCipherSuites(); }
+        @Override public String[] getSupportedCipherSuites() { return delegate.getSupportedCipherSuites(); }
+        @Override public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException { return enable(delegate.createSocket(s, host, port, autoClose)); }
+        @Override public Socket createSocket(String host, int port) throws IOException { return enable(delegate.createSocket(host, port)); }
+        @Override public Socket createSocket(String host, int port, java.net.InetAddress local, int localPort) throws IOException { return enable(delegate.createSocket(host, port, local, localPort)); }
+        @Override public Socket createSocket(java.net.InetAddress host, int port) throws IOException { return enable(delegate.createSocket(host, port)); }
+        @Override public Socket createSocket(java.net.InetAddress address, int port, java.net.InetAddress local, int localPort) throws IOException { return enable(delegate.createSocket(address, port, local, localPort)); }
+    }
 
     private class NetworkBridge {
         @JavascriptInterface
@@ -30,13 +55,19 @@ public class MainActivity extends Activity {
                 @Override public void run() {
                     HttpURLConnection connection = null;
                     String result = null;
+                    String error = null;
                     try {
                         if (!url.startsWith("https://")) throw new Exception("HTTPS only");
                         connection = (HttpURLConnection) new URL(url).openConnection();
-                        connection.setConnectTimeout(12000);
-                        connection.setReadTimeout(12000);
+                        if (connection instanceof HttpsURLConnection && Build.VERSION.SDK_INT <= 20) {
+                            ((HttpsURLConnection) connection).setSSLSocketFactory(
+                                new TLS12SocketFactory((SSLSocketFactory) SSLSocketFactory.getDefault()));
+                        }
+                        connection.setConnectTimeout(20000);
+                        connection.setReadTimeout(20000);
                         connection.setRequestMethod("GET");
-                        connection.setRequestProperty("User-Agent", "WadiDashboard/1.0 Android");
+                        connection.setRequestProperty("User-Agent", "WadiDashboard/1.1 Android");
+                        connection.setRequestProperty("Accept", "application/json,*/*");
                         int status = connection.getResponseCode();
                         InputStream stream = status >= 200 && status < 300
                                 ? connection.getInputStream() : connection.getErrorStream();
@@ -47,19 +78,24 @@ public class MainActivity extends Activity {
                             while ((line = reader.readLine()) != null) body.append(line);
                             reader.close();
                             if (status >= 200 && status < 300) result = body.toString();
+                            else error = "HTTP " + status;
+                        } else {
+                            error = "HTTP " + status;
                         }
-                    } catch (Exception ignored) {
-                        result = null;
+                    } catch (Exception e) {
+                        error = e.getClass().getSimpleName() + ": " + String.valueOf(e.getMessage());
                     } finally {
                         if (connection != null) connection.disconnect();
                     }
                     final String response = result;
+                    final String errorMessage = error;
                     mainHandler.post(new Runnable() {
                         @Override public void run() {
                             if (webView == null) return;
                             String safe = response == null ? "null" : org.json.JSONObject.quote(response);
+                            String err = errorMessage == null ? "null" : org.json.JSONObject.quote(errorMessage);
                             webView.evaluateJavascript("window.__wadiNativeResult(" +
-                                    org.json.JSONObject.quote(callbackId) + "," + safe + ")", null);
+                                    org.json.JSONObject.quote(callbackId) + "," + safe + "," + err + ")", null);
                         }
                     });
                 }
