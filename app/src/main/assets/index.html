@@ -11,7 +11,7 @@ body{background-position:center;background-size:cover;background-repeat:no-repea
 .overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.42);display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-orient:vertical;-webkit-flex-direction:column;flex-direction:column;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;padding:4vh 5vw}
 .header-section{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start;width:100%}
 .clock-area{min-width:0}.time-box{font-size:7vw;font-weight:bold;letter-spacing:1px;line-height:1.2}.date-box{font-size:2.2vw;margin-top:12px;font-weight:500;line-height:1.5}
-.weather-box{text-align:left;background:rgba(255,255,255,.17);padding:14px 20px;border-radius:16px;border:1px solid rgba(255,255,255,.22);cursor:pointer}.temp{font-size:4.5vw;font-weight:bold}.weather-desc{font-size:1.7vw;margin-top:5px}.weather-city{font-size:1.3vw;margin-top:4px}
+
 .bottom-area{width:100%;text-align:center}
 .quran-panel{background:rgba(0,0,0,.64);padding:12px 18px;border:1px solid rgba(255,255,255,.22);border-radius:14px;margin-bottom:10px}
 .quran-title{font-size:1.4vw;color:#f4d88a;margin-bottom:7px}
@@ -23,20 +23,20 @@ body{background-position:center;background-size:cover;background-repeat:no-repea
 .controls select{max-width:190px}
 .status{font-size:13px;margin-top:6px;color:#f6e8bd;min-height:1.3em}
 .footer-section{text-align:center;font-size:1.5vw;background:rgba(0,0,0,.38);padding:7px 12px;border-radius:10px;margin-top:9px}
-@media screen and (max-width:800px){.overlay{padding:18px}.time-box{font-size:44px}.date-box{font-size:15px}.temp{font-size:30px}.weather-desc{font-size:13px}.weather-city{font-size:11px}.quran-title{font-size:13px}.ayah-text{font-size:20px}.ayah-ref{font-size:12px}.footer-section{font-size:13px}.weather-box{padding:10px 12px}.controls button,.controls select{padding:7px 9px;font-size:13px}.quran-panel{padding:9px 12px}}
+@media screen and (max-width:800px){.overlay{padding:18px}.time-box{font-size:44px}.date-box{font-size:15px}.temp{font-size:30px}.quran-title{font-size:13px}.ayah-text{font-size:20px}.ayah-ref{font-size:12px}.footer-section{font-size:13px}.controls button,.controls select{padding:7px 9px;font-size:13px}.quran-panel{padding:9px 12px}}
 </style>
 </head>
 <body id="bodyBg">
 <div class="overlay">
   <div class="header-section">
     <div class="clock-area"><div id="timeDisplay" class="time-box">00:00:00</div><div id="dateDisplay" class="date-box">جاري تحميل التاريخ...</div></div>
-    <div class="weather-box" id="weatherBox" title="اضغط لتغيير المدينة"><div id="tempDisplay" class="temp">--°C</div><div id="weatherDescDisplay" class="weather-desc">جارٍ الاتصال بالطقس...</div><div id="weatherCity" class="weather-city">بغداد • اضغط لتغيير المدينة</div></div>
+    </div>
   </div>
   <div class="bottom-area">
     <div class="quran-panel">
       <div class="quran-title">تلاوة القرآن الكريم • الشيخ محمد محمود الطبلاوي</div>
       <div id="ayahText" class="ayah-text">اختر السورة ثم اضغط تشغيل لعرض الآيات مع التلاوة</div>
-      <div id="ayahRef" class="ayah-ref">التلاوة تحتاج إلى اتصال بالإنترنت</div>
+      <div id="ayahRef" class="ayah-ref">نص القرآن متوفر دون إنترنت؛ التلاوة الصوتية تحتاج إلى اتصال</div>
     </div>
     <div class="controls">
       <select id="surahSelect" aria-label="اختر السورة"></select>
@@ -50,6 +50,7 @@ body{background-position:center;background-size:cover;background-repeat:no-repea
   </div>
 </div>
 <audio id="quranAudio" preload="none"></audio>
+<script src="quran-data.js" type="text/javascript"></script>
 <script type="text/javascript">
 (function(){
 var lastBackground="";
@@ -57,8 +58,10 @@ var weekdays=["الأحد","الاثنين","الثلاثاء","الأربعاء
 var months=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 function twoDigits(v){v=String(v);return v.length<2?"0"+v:v;}
 function setBackground(hour){
- var url=hour>=6&&hour<18?"https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80":"https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80";
- if(url!==lastBackground){document.getElementById("bodyBg").style.backgroundImage="url('"+url+"')";lastBackground=url;}
+ var color=hour>=6&&hour<18
+  ?"linear-gradient(135deg,#31536b 0%,#162d3c 48%,#0d1c29 100%)"
+  :"linear-gradient(135deg,#101827 0%,#182d40 48%,#080e17 100%)";
+ document.getElementById("bodyBg").style.backgroundImage=color;
 }
 function dateText(now){
  var g=weekdays[now.getDay()]+"، "+now.getDate()+" "+months[now.getMonth()]+" "+now.getFullYear();
@@ -73,57 +76,7 @@ function updateClock(){
 }
 updateClock();window.setInterval(updateClock,1000);
 
-/* الطقس: Open-Meteo مجاني ولا يحتاج مفتاح API */
-var weatherCity="بغداد",weatherLat=33.3152,weatherLon=44.3661;
-try{if(window.localStorage.getItem("wadiWeatherCity"))weatherCity=window.localStorage.getItem("wadiWeatherCity");}catch(e){}
-/* استخدم اتصال Android الأصلي لتجاوز قيود CORS وWebView القديم في Android 4.4 */
-window.__wadiCallbacks=window.__wadiCallbacks||{};
-window.__wadiNativeResult=function(id,body,error){
- var cb=window.__wadiCallbacks[id];if(!cb)return;delete window.__wadiCallbacks[id];
- if(body===null){window.__wadiLastNetworkError=error||"Network error";if(cb.fail)cb.fail(window.__wadiLastNetworkError);return;}
- try{cb.done(JSON.parse(body));}catch(e){if(cb.fail)cb.fail();}
-};
-var wadiRequestId=0;
-function xhrJson(url,done,fail){
- if(window.WadiNetwork&&window.WadiNetwork.fetchUrl){
-  var id="req"+(++wadiRequestId);window.__wadiCallbacks[id]={done:done,fail:fail};
-  try{window.WadiNetwork.fetchUrl(url,id);}catch(e){delete window.__wadiCallbacks[id];if(fail)fail();}
-  return;
- }
- var x=new XMLHttpRequest();x.open("GET",url,true);x.timeout=15000;
- x.onreadystatechange=function(){if(x.readyState===4){if(x.status>=200&&x.status<300){try{done(JSON.parse(x.responseText));}catch(e){if(fail)fail();}}else if(fail)fail();}};
- x.onerror=function(){if(fail)fail();};x.ontimeout=function(){if(fail)fail();};x.send(null);
-}
-function weatherLabel(code){
- if(code===0)return "سماء صافية";if(code===1)return "صحو غالباً";if(code===2)return "غائم جزئياً";if(code===3)return "غائم";
- if(code===45||code===48)return "ضباب";if(code===51||code===53||code===55)return "رذاذ";
- if(code===61||code===63||code===65)return "أمطار";if(code===66||code===67)return "مطر متجمد";
- if(code===71||code===73||code===75||code===77)return "ثلوج";if(code===80||code===81||code===82)return "زخات مطر";
- if(code===85||code===86)return "زخات ثلج";if(code===95||code===96||code===99)return "عواصف رعدية";return "حالة الطقس";
-}
-function loadWeather(lat,lon,city){
- document.getElementById("weatherDescDisplay").innerHTML="جارٍ تحديث الطقس...";
- xhrJson("https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+"&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto",function(d){
-  if(!d.current)throw new Error("no weather");
-  document.getElementById("tempDisplay").innerHTML=Math.round(d.current.temperature_2m)+"°C";
-  document.getElementById("weatherDescDisplay").innerHTML=weatherLabel(d.current.weather_code)+" • محسوسة "+Math.round(d.current.apparent_temperature)+"°";
-  document.getElementById("weatherCity").innerHTML=city+" • رطوبة "+Math.round(d.current.relative_humidity_2m)+"%";
- },function(err){document.getElementById("weatherDescDisplay").innerHTML="تعذر الاتصال؛ اضغط لإعادة المحاولة";document.getElementById("weatherCity").innerHTML=city+" • "+(err||"تحقق من الشبكة");});
-}
-function findWeatherCity(city){
- document.getElementById("weatherDescDisplay").innerHTML="جارٍ البحث عن المدينة...";
- xhrJson("https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(city)+"&count=1&language=ar&format=json",function(d){
-  if(d.results&&d.results.length){var r=d.results[0];weatherCity=r.name||city;weatherLat=r.latitude;weatherLon=r.longitude;
-   try{window.localStorage.setItem("wadiWeatherCity",weatherCity);window.localStorage.setItem("wadiWeatherLat",weatherLat);window.localStorage.setItem("wadiWeatherLon",weatherLon);}catch(e){}
-   loadWeather(weatherLat,weatherLon,weatherCity);
-  }else{document.getElementById("weatherDescDisplay").innerHTML="لم يتم العثور على المدينة";}
- },function(err){document.getElementById("weatherDescDisplay").innerHTML="تعذر الاتصال بخدمة الطقس";document.getElementById("weatherCity").innerHTML=err||"تحقق من الشبكة";});
-}
-try{var slat=window.localStorage.getItem("wadiWeatherLat"),slon=window.localStorage.getItem("wadiWeatherLon");if(slat&&slon){weatherLat=parseFloat(slat);weatherLon=parseFloat(slon);}}catch(e){}
-loadWeather(weatherLat,weatherLon,weatherCity);
-document.getElementById("weatherBox").onclick=function(){var c=window.prompt("اكتب اسم المدينة بالعربية أو الإنجليزية:",weatherCity);if(c&&c.replace(/\s/g,"").length>0)findWeatherCity(c);else loadWeather(weatherLat,weatherLon,weatherCity);};
-
-/* آيات نصية من Quran Cloud، والتلاوة آيةً آيةً من EveryAyah */
+/* نص القرآن مضمّن محلياً؛ الصوت آيةً آيةً من مصدر التلاوة */
 var surahNames=["الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس","هود","يوسف","الرعد","إبراهيم","الحجر","النحل","الإسراء","الكهف","مريم","طه","الأنبياء","الحج","المؤمنون","النور","الفرقان","الشعراء","النمل","القصص","العنكبوت","الروم","لقمان","السجدة","الأحزاب","سبأ","فاطر","يس","الصافات","ص","الزمر","غافر","فصلت","الشورى","الزخرف","الدخان","الجاثية","الأحقاف","محمد","الفتح","الحجرات","ق","الذاريات","الطور","النجم","القمر","الرحمن","الواقعة","الحديد","المجادلة","الحشر","الممتحنة","الصف","الجمعة","المنافقون","التغابن","الطلاق","التحريم","الملك","القلم","الحاقة","المعارج","نوح","الجن","المزمل","المدثر","القيامة","الإنسان","المرسلات","النبأ","النازعات","عبس","التكوير","الانفطار","المطففين","الانشقاق","البروج","الطارق","الأعلى","الغاشية","الفجر","البلد","الشمس","الليل","الضحى","الشرح","التين","العلق","القدر","البينة","الزلزلة","العاديات","القارعة","التكاثر","العصر","الهمزة","الفيل","قريش","الماعون","الكوثر","الكافرون","النصر","المسد","الإخلاص","الفلق","الناس"];
 var select=document.getElementById("surahSelect"),audio=document.getElementById("quranAudio"),ayahs=[],ayahIndex=0,currentSurah=1,playing=false;
 for(var si=0;si<surahNames.length;si++){var op=document.createElement("option");op.value=si+1;op.text=twoDigits(si+1)+" - "+surahNames[si];select.appendChild(op);}
@@ -142,12 +95,12 @@ function loadSurah(num,autoplay){
  currentSurah=parseInt(num,10);ayahs=[];ayahIndex=0;playing=!!autoplay;
  document.getElementById("ayahText").innerHTML="جارٍ تحميل آيات سورة "+surahNames[currentSurah-1]+"...";
  document.getElementById("ayahRef").innerHTML="يرجى الانتظار";
- status("جارٍ الاتصال بمصدر نص القرآن...");
- xhrJson("https://api.alquran.cloud/v1/surah/"+currentSurah+"/quran-uthmani",function(d){
-  if(!d.data||!d.data.ayahs){status("تعذر تحميل نص الآيات؛ تحقق من الإنترنت");return;}
-  ayahs=[];for(var i=0;i<d.data.ayahs.length;i++)ayahs.push({number:d.data.ayahs[i].numberInSurah,text:d.data.ayahs[i].text});
-  ayahIndex=0;showAyah();
- },function(err){status("تعذر تحميل الآيات: "+(err||"تحقق من الإنترنت"));document.getElementById("ayahText").innerHTML="تعذر تحميل الآيات";});
+ if(!window.WADI_QURAN||!window.WADI_QURAN[currentSurah-1]){
+  status("تعذر العثور على نص القرآن المضمّن في التطبيق");return;
+ }
+ var localSurah=window.WADI_QURAN[currentSurah-1];
+ if(!localSurah.ayahs||!localSurah.ayahs.length){status("بيانات السورة غير مكتملة");return;}
+ ayahs=localSurah.ayahs;ayahIndex=0;showAyah();
 }
 document.getElementById("playBtn").onclick=function(){if(ayahs.length){playing=true;showAyah();}else loadSurah(select.value,true);};
 document.getElementById("pauseBtn").onclick=function(){audio.pause();playing=false;status("التلاوة متوقفة مؤقتاً");};
