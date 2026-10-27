@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>واجهة شاشة وادي الذكية</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Tahoma,Arial,sans-serif}
+html,body{width:100%;height:100%;overflow:hidden;background:#101923;color:#fff}
+body{background-position:center;background-size:cover;background-repeat:no-repeat;text-shadow:2px 2px 6px rgba(0,0,0,.85)}
+.overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.38);display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-orient:vertical;-webkit-flex-direction:column;flex-direction:column;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;padding:4vh 5vw}
+.header-section{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start;width:100%}
+.clock-area{min-width:0}.time-box{font-size:7vw;font-weight:bold;letter-spacing:1px;line-height:1.2}.date-box{font-size:2.2vw;margin-top:12px;font-weight:500;line-height:1.5}
+.weather-box{text-align:left;background:rgba(255,255,255,.17);padding:18px 24px;border-radius:16px;border:1px solid rgba(255,255,255,.22)}
+.temp{font-size:4.5vw;font-weight:bold}.weather-desc{font-size:1.8vw;margin-top:5px}
+.footer-section{text-align:center;font-size:2vw;background:rgba(0,0,0,.42);padding:14px 18px;border-radius:12px;letter-spacing:.5px}
+@media screen and (max-width:800px){.overlay{padding:24px}.time-box{font-size:54px}.date-box{font-size:17px}.temp{font-size:38px}.weather-desc{font-size:16px}.footer-section{font-size:17px}.weather-box{padding:14px 16px}}
+</style>
+</head>
+<body id="bodyBg">
+<div class="overlay">
+<div class="header-section">
+<div class="clock-area"><div id="timeDisplay" class="time-box">00:00:00</div><div id="dateDisplay" class="date-box">جاري تحميل التاريخ...</div></div>
+<div class="weather-box"><div id="tempDisplay" class="temp">--°C</div><div id="weatherDescDisplay" class="weather-desc">الطقس غير متصل</div></div>
+</div>
+<div class="footer-section" id="footerQuote">ألا بذكر الله تطمئن القلوب</div>
+</div>
+<script type="text/javascript">
+(function(){
+var lastBackground="";
+var weekdays=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+var months=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+function twoDigits(v){v=String(v);return v.length<2?"0"+v:v;}
+function setBackground(hour){
+var url=hour>=6&&hour<18?
+"https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80":
+"https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80";
+if(url!==lastBackground){document.getElementById("bodyBg").style.backgroundImage="url('"+url+"')";lastBackground=url;}
+}
+function dateText(now){
+var g=weekdays[now.getDay()]+"، "+now.getDate()+" "+months[now.getMonth()]+" "+now.getFullYear();
+try{g=now.toLocaleDateString("ar",{weekday:"long",year:"numeric",month:"long",day:"numeric"})||g;}catch(e){}
+var h="";
+try{if(window.Intl&&window.Intl.DateTimeFormat){h=new window.Intl.DateTimeFormat("ar-SA-u-ca-islamic",{day:"numeric",month:"long",year:"numeric"}).format(now);}}catch(e2){}
+return h?g+" | "+h:g;
+}
+function update(){
+var now=new Date(),h=now.getHours(),h12=h%12;if(h12===0){h12=12;}
+document.getElementById("timeDisplay").innerHTML=twoDigits(h12)+":"+twoDigits(now.getMinutes())+":"+twoDigits(now.getSeconds())+" "+(h>=12?"مساءً":"صباحاً");
+document.getElementById("dateDisplay").innerHTML=dateText(now);setBackground(h);
+}
+update();window.setInterval(update,1000);
+}());
+</script>
+</body>
+</html>
