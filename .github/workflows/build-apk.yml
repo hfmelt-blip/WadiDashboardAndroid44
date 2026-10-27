@@ -30,6 +30,30 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '4.6'
+      - name: Download offline Quran text
+        run: |
+          mkdir -p app/src/main/assets
+          curl --fail --location --retry 3 --connect-timeout 20 "https://api.alquran.cloud/v1/quran/quran-uthmani" -o /tmp/quran.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/quran.json', encoding='utf-8') as f:
+              source = json.load(f)
+          if source.get('code') != 200 or not source.get('data', {}).get('surahs'):
+              raise SystemExit('Quran text download did not return a valid response')
+          surahs = []
+          total = 0
+          for surah in source['data']['surahs']:
+              ayahs = [{'number': a['numberInSurah'], 'text': a['text']} for a in surah['ayahs']]
+              total += len(ayahs)
+              surahs.append({'number': surah['number'], 'ayahs': ayahs})
+          if len(surahs) != 114 or total != 6236:
+              raise SystemExit('Unexpected Quran data size: %s surahs, %s ayahs' % (len(surahs), total))
+          with open('app/src/main/assets/quran-data.js', 'w', encoding='utf-8') as f:
+              f.write('window.WADI_QURAN=')
+              json.dump(surahs, f, ensure_ascii=False, separators=(',', ':'))
+              f.write(';')
+          print('Bundled %s surahs and %s ayahs for offline reading' % (len(surahs), total))
+          PY
       - name: Build debug APK
         run: gradle assembleDebug --stacktrace
       - name: Upload APK
