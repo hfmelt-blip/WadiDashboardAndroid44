@@ -16,10 +16,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
       - name: Install Android SDK packages
-        run: yes | sdkmanager --licenses >/dev/null && sdkmanager "platforms;android-28" "build-tools;28.0.3"
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null
+          "$SDKMANAGER" "platforms;android-28" "build-tools;28.0.3" "platform-tools"
       - name: Set up Java 8 for legacy Gradle
         uses: actions/setup-java@v4
         with:
