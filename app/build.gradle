@@ -3,11 +3,13 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.wadi.dashboardtv"
+        // Unique ID so this troubleshooting build installs alongside the existing app
+        // and does not require uninstalling or replacing it.
+        applicationId "com.wadi.dashboardtv.networkfix"
         minSdkVersion 19
         targetSdkVersion 19
         versionCode 1
-        versionName "1.0"
+        versionName "1.0-networkfix"
     }
     lintOptions { abortOnError false }
 }
