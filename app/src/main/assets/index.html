@@ -76,9 +76,23 @@ updateClock();window.setInterval(updateClock,1000);
 /* الطقس: Open-Meteo مجاني ولا يحتاج مفتاح API */
 var weatherCity="بغداد",weatherLat=33.3152,weatherLon=44.3661;
 try{if(window.localStorage.getItem("wadiWeatherCity"))weatherCity=window.localStorage.getItem("wadiWeatherCity");}catch(e){}
+/* استخدم اتصال Android الأصلي لتجاوز قيود CORS وWebView القديم في Android 4.4 */
+window.__wadiCallbacks=window.__wadiCallbacks||{};
+window.__wadiNativeResult=function(id,body){
+ var cb=window.__wadiCallbacks[id];if(!cb)return;delete window.__wadiCallbacks[id];
+ if(body===null){if(cb.fail)cb.fail();return;}
+ try{cb.done(JSON.parse(body));}catch(e){if(cb.fail)cb.fail();}
+};
+var wadiRequestId=0;
 function xhrJson(url,done,fail){
- var x=new XMLHttpRequest();x.open("GET",url,true);x.onreadystatechange=function(){if(x.readyState===4){if(x.status>=200&&x.status<300){try{done(JSON.parse(x.responseText));}catch(e){if(fail)fail();}}else if(fail)fail();}};
- x.onerror=function(){if(fail)fail();};x.send(null);
+ if(window.WadiNetwork&&window.WadiNetwork.fetchUrl){
+  var id="req"+(++wadiRequestId);window.__wadiCallbacks[id]={done:done,fail:fail};
+  try{window.WadiNetwork.fetchUrl(url,id);}catch(e){delete window.__wadiCallbacks[id];if(fail)fail();}
+  return;
+ }
+ var x=new XMLHttpRequest();x.open("GET",url,true);x.timeout=15000;
+ x.onreadystatechange=function(){if(x.readyState===4){if(x.status>=200&&x.status<300){try{done(JSON.parse(x.responseText));}catch(e){if(fail)fail();}}else if(fail)fail();}};
+ x.onerror=function(){if(fail)fail();};x.ontimeout=function(){if(fail)fail();};x.send(null);
 }
 function weatherLabel(code){
  if(code===0)return "سماء صافية";if(code===1)return "صحو غالباً";if(code===2)return "غائم جزئياً";if(code===3)return "غائم";
