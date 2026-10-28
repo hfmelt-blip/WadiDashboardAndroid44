@@ -33,6 +33,9 @@ jobs:
       - name: Download offline Quran text
         run: |
           mkdir -p app/src/main/assets
+          curl --fail --location --retry 3 --connect-timeout 20 "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80" -o app/src/main/assets/day-bg.jpg
+          curl --fail --location --retry 3 --connect-timeout 20 "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80" -o app/src/main/assets/night-bg.jpg
+          test -s app/src/main/assets/day-bg.jpg && test -s app/src/main/assets/night-bg.jpg
           curl --fail --location --retry 3 --connect-timeout 20 "https://api.alquran.cloud/v1/quran/quran-uthmani" -o /tmp/quran.json
           python3 - <<'PY'
           import json
