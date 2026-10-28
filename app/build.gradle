@@ -2,14 +2,30 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
+
+    signingConfigs {
+        debug {
+            // Android 4.4 requires the legacy JAR (v1) APK signature.
+            v1SigningEnabled true
+            v2SigningEnabled false
+        }
+    }
+
     defaultConfig {
-        // New application ID, independent of all previous troubleshooting builds.
+        // Keep this package separate from older installs to avoid signature conflicts.
         applicationId "com.hfmelt.wadidashboard.offline20261028"
         minSdkVersion 19
         targetSdkVersion 19
-        versionCode 1
-        versionName "1.0-offline-20261028"
+        versionCode 2
+        versionName "1.0.2-android44"
     }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+
     lintOptions { abortOnError false }
 }
 
