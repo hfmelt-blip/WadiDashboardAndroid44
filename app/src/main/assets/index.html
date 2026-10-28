@@ -31,7 +31,6 @@ body{background-position:center;background-size:cover;background-repeat:no-repea
   <div class="header-section">
     <div class="clock-area"><div id="timeDisplay" class="time-box">00:00:00</div><div id="dateDisplay" class="date-box">جاري تحميل التاريخ...</div></div>
     </div>
-  </div>
   <div class="bottom-area">
     <div class="quran-panel">
       <div class="quran-title">تلاوة القرآن الكريم • الشيخ محمد محمود الطبلاوي</div>
@@ -58,10 +57,8 @@ var weekdays=["الأحد","الاثنين","الثلاثاء","الأربعاء
 var months=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 function twoDigits(v){v=String(v);return v.length<2?"0"+v:v;}
 function setBackground(hour){
- var color=hour>=6&&hour<18
-  ?"linear-gradient(135deg,#31536b 0%,#162d3c 48%,#0d1c29 100%)"
-  :"linear-gradient(135deg,#101827 0%,#182d40 48%,#080e17 100%)";
- document.getElementById("bodyBg").style.backgroundImage=color;
+ var image=hour>=6&&hour<18?"day-bg.jpg":"night-bg.jpg";
+ document.getElementById("bodyBg").style.backgroundImage="url(\'"+image+"\')";
 }
 function dateText(now){
  var g=weekdays[now.getDay()]+"، "+now.getDate()+" "+months[now.getMonth()]+" "+now.getFullYear();
